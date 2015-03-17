@@ -3,22 +3,23 @@
 
 ## ooc-sqlite3
 
-libvorbisfile bindings for ooc
+ooc bindings for the C/C++ interface to SQLite 3.x
 
-libvorbisfile is a higher-level layer above libvorbis, that provides
-facilities for demuxing and decoding an OGG Vorbis file/stream from
-either a `FILE*` pointer, or a custom set of read/seek/close/tell callbacks.
+SQLite is a software library that implements a self-contained, serverless,
+zero-configuration, transactional SQL database engine. SQLite is the most
+widely deployed SQL database engine in the world. The source code for SQLite is
+in the public domain.
 
 ### Authors
 
   * Arda Çınar aka kuzux (original work)
-  * Amos Wenger (few cleanups)
+  * Amos Wenger (rock port, cleanups)
 
 ### Links
 
-  * sqlite: <https://www.sqlite.org/>
+  * SQLite: <https://www.sqlite.org/>
   
 ### License
 
-Sqlite is in the public domain. These bindings are under a BSD license.
+SQLite is in the public domain. These bindings are under a BSD license.
   
