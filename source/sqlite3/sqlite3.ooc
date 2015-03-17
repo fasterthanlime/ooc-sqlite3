@@ -11,7 +11,7 @@ Database: cover from SqliteStruct {
   new: static func (file: String) -> This {
     this: This
     This _open(file toCString(), this&)
-    return this
+    this
   }
   initialize: extern(sqlite3_initialize) static func -> Int
   close: extern(sqlite3_close) func -> Int
@@ -24,7 +24,7 @@ Database: cover from SqliteStruct {
   prepare: func (query: String) -> Statement {
     res: Statement
     this _prepare(query toCString(), -1, res&, null)
-    return res
+    res
   }
 
   exec: func (query: String, callback: Func (HashMap<String, Value>)) -> Int{
@@ -36,7 +36,7 @@ Database: cover from SqliteStruct {
       res = stmt step()
     }
     stmt finalize()
-    return res
+    res
   }
 }
 
@@ -51,6 +51,7 @@ Value: cover from SqliteValueStruct {
   toCString: extern(sqlite3_value_text) func -> CString
   toString: func -> String { toCString() toString() }
   toBlob: extern(sqlite3_value_blob) func -> Pointer
+  type: extern(sqlite3_value_type) func -> Int
 }
 
 // Prepared statements
@@ -64,7 +65,7 @@ Statement: cover from SqliteStmtStruct {
 
   new: static func -> This {
     this := gc_malloc(This size) as This
-    return this
+    this
   }
 
   columnCount: extern(sqlite3_column_count) func -> Int
@@ -82,21 +83,25 @@ Statement: cover from SqliteStmtStruct {
   bindDouble: extern(sqlite3_bind_double) func (Int, Double) -> Int
   _bind_text: extern(sqlite3_bind_text) func (Int, CString, Int, Pointer) -> Int
   bindText: func (id: Int, text: String) -> Int {
-    return this _bind_text(id, text toCString(), -1, null)
+    _bind_text(id, text toCString(), -1, null)
+  }
+  bindText: func ~cstring (id: Int, text: CString) -> Int {
+    _bind_text(id, text , -1, null)
   }
   _bind_blob: extern(sqlite3_bind_blob) func (Int, Pointer, Int, Pointer) -> Int
   bindBlob: func (id: Int, data: Pointer, size: Int) -> Int {
-    return this _bind_blob(id, data, size, null)
+    _bind_blob(id, data, size, null)
   }
   bindValue: extern(sqlite3_bind_value) func (Int, Value) -> Int
 
   bind: func <T> (id: Int, val: T) -> Int {
     match val {
-        case i: Int    => this bindInt(id, i)
-        case I: Int64  => this bindInt64(id, I)
-        case d: Double => this bindDouble(id, d)
-        case s: String => this bindText(id, s)
-        case           => Sqlite3Code misuse
+        case i: Int     => this bindInt(id, i)
+        case I: Int64   => this bindInt64(id, I)
+        case d: Double  => this bindDouble(id, d)
+        case s: String  => this bindText(id, s)
+        case S: CString => this bindText(id, S)
+        case            => Sqlite3Code misuse
     }
   }
 
@@ -123,42 +128,52 @@ Statement: cover from SqliteStmtStruct {
       val := this valueColumn(i)
       map put(name, val)
     }
-    return map
+    map
   }
 }
 
 // Return codes
 
 Sqlite3Code: enum from Int {
-  ok:          extern(SQLITE_OK),          /* Successful result */
-/* beginning-of-error-codes */
-  error:       extern(SQLITE_ERROR),       /* SQL error or missing database */
-  _internal:   extern(SQLITE_INTERNAL),    /* internal logic error in SQLite */
-  perm:        extern(SQLITE_PERM),        /* Access permission denied */
-  abort:       extern(SQLITE_ABORT),       /* Callback routine requested an abort */
-  busy:        extern(SQLITE_BUSY),        /* The database file is locked */
-  locked:      extern(SQLITE_LOCKED),      /* A table in the database is locked */
-  nomem:       extern(SQLITE_NOMEM),       /* A malloc(), failed */
-  readonly:    extern(SQLITE_READONLY),    /* Attempt to write a readonly database */
-  interrupt:   extern(SQLITE_INTERRUPT),   /* Operation terminated by sqlite3_interrupt(),*/
-  ioerr:       extern(SQLITE_IOERR),       /* Some kind of disk I/O error occurred */
-  corrupt:     extern(SQLITE_CORRUPT),     /* The database disk image is malformed */
-  notfound:    extern(SQLITE_NOTFOUND),    /* NOT USED. Table or record not found */
-  full:        extern(SQLITE_FULL),        /* Insertion failed because database is full */
-  cantopen:    extern(SQLITE_CANTOPEN),    /* Unable to open the database file */
-  protocol:    extern(SQLITE_PROTOCOL),    /* NOT USED. Database lock protocol error */
-  empty:       extern(SQLITE_EMPTY),       /* Database is empty */
-  schema:      extern(SQLITE_SCHEMA),      /* The database schema changed */
-  toobig:      extern(SQLITE_TOOBIG),      /* String or BLOB exceeds size limit */
-  constraint:  extern(SQLITE_CONSTRAINT),  /* Abort due to constraint violation */
-  mismatch:    extern(SQLITE_MISMATCH),    /* Data type mismatch */
-  misuse:      extern(SQLITE_MISUSE),      /* Library used incorrectly */
-  nolfs:       extern(SQLITE_NOLFS),       /* Uses OS features not supported on host */
-  auth:        extern(SQLITE_AUTH),        /* Authorization denied */
-  format:      extern(SQLITE_FORMAT),      /* Auxiliary database format error */
-  range:       extern(SQLITE_RANGE),       /* 2nd parameter to sqlite3_bind out of range */
-  notadb:      extern(SQLITE_NOTADB),      /* File opened that is not a database file */
-  row:         extern(SQLITE_ROW),         /* sqlite3_step(), has another row ready */
-  done:        extern(SQLITE_DONE)         /* sqlite3_step(), has finished executing */
+    ok:          extern(SQLITE_OK),          /* Successful result */
+    /* beginning-of-error-codes */
+    error:       extern(SQLITE_ERROR),       /* SQL error or missing database */
+    _internal:   extern(SQLITE_INTERNAL),    /* internal logic error in SQLite */
+    perm:        extern(SQLITE_PERM),        /* Access permission denied */
+    abort:       extern(SQLITE_ABORT),       /* Callback routine requested an abort */
+    busy:        extern(SQLITE_BUSY),        /* The database file is locked */
+    locked:      extern(SQLITE_LOCKED),      /* A table in the database is locked */
+    nomem:       extern(SQLITE_NOMEM),       /* A malloc(), failed */
+    readonly:    extern(SQLITE_READONLY),    /* Attempt to write a readonly database */
+    interrupt:   extern(SQLITE_INTERRUPT),   /* Operation terminated by sqlite3_interrupt(),*/
+    ioerr:       extern(SQLITE_IOERR),       /* Some kind of disk I/O error occurred */
+    corrupt:     extern(SQLITE_CORRUPT),     /* The database disk image is malformed */
+    notfound:    extern(SQLITE_NOTFOUND),    /* NOT USED. Table or record not found */
+    full:        extern(SQLITE_FULL),        /* Insertion failed because database is full */
+    cantopen:    extern(SQLITE_CANTOPEN),    /* Unable to open the database file */
+    protocol:    extern(SQLITE_PROTOCOL),    /* NOT USED. Database lock protocol error */
+    empty:       extern(SQLITE_EMPTY),       /* Database is empty */
+    schema:      extern(SQLITE_SCHEMA),      /* The database schema changed */
+    toobig:      extern(SQLITE_TOOBIG),      /* String or BLOB exceeds size limit */
+    constraint:  extern(SQLITE_CONSTRAINT),  /* Abort due to constraint violation */
+    mismatch:    extern(SQLITE_MISMATCH),    /* Data type mismatch */
+    misuse:      extern(SQLITE_MISUSE),      /* Library used incorrectly */
+    nolfs:       extern(SQLITE_NOLFS),       /* Uses OS features not supported on host */
+    auth:        extern(SQLITE_AUTH),        /* Authorization denied */
+    format:      extern(SQLITE_FORMAT),      /* Auxiliary database format error */
+    range:       extern(SQLITE_RANGE),       /* 2nd parameter to sqlite3_bind out of range */
+    notadb:      extern(SQLITE_NOTADB),      /* File opened that is not a database file */
+    row:         extern(SQLITE_ROW),         /* sqlite3_step(), has another row ready */
+    done:        extern(SQLITE_DONE)         /* sqlite3_step(), has finished executing */
+}
+
+// Types
+
+Sqlite3Type: enum from Int {
+    _integer:    extern(SQLITE_INTEGER),
+    _float:      extern(SQLITE_FLOAT),
+    _blob:       extern(SQLITE_BLOB),
+    _null:       extern(SQLITE_NULL),
+    _text:       extern(SQLITE3_TEXT)
 }
 
