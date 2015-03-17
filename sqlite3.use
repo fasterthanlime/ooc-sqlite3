@@ -1,5 +1,5 @@
-Name: Sqlite3
-Description: A Small Relational Database
+Name: sqlite3
+Description: ooc bindings for Sqlite v3, a small relational database
 Pkgs: sqlite3
-SourcePath: .
+SourcePath: source
 

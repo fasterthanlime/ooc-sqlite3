@@ -1,3 +1,5 @@
 *~
 .*.sw?
-ooc_tmp/*
+.libs
+rock_tmp
+.sam-cache
