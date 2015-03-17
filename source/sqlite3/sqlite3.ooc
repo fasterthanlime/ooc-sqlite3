@@ -48,7 +48,8 @@ Value: cover from SqliteValueStruct {
   toInt: extern(sqlite3_value_int) func -> Int
   toInt64: extern(sqlite3_value_int64) func -> Int64
   toDouble: extern(sqlite3_value_double) func -> Double
-  toString: extern(sqlite3_value_text) func -> String
+  toCString: extern(sqlite3_value_text) func -> CString
+  toString: func -> String { toCString() toString() }
   toBlob: extern(sqlite3_value_blob) func -> Pointer
 }
 

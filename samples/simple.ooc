@@ -1,10 +1,12 @@
 
 use sqlite3
 import sqlite3/sqlite3
+import io/File
 
-dbPath := "asd.db"
+dbPath := "simple.db"
 
 main: func {
+    File new(dbPath) rm()
     createTable()
     insertInto()
     selectFrom()
@@ -13,7 +15,7 @@ main: func {
 
 createTable: func {
     db := Database new(dbPath)
-    stmt := db prepare("create table stuff(asd,zxc);")
+    stmt := db prepare("create table builds(id int, comment string);")
     stmt step()
     "#{stmt}" println()
     stmt finalize()
@@ -23,9 +25,9 @@ createTable: func {
 
 insertInto: func {
     db := Database new(dbPath)
-    stmt := db prepare("insert into stuff values(?, ?);")
+    stmt := db prepare("insert into builds(id, comment) values(?, ?);")
     stmt bind(1, 42)
-    stmt bind(2, 31)
+    stmt bind(2, "please work")
     stmt step()
     "#{stmt}" println()
     stmt finalize()
@@ -33,9 +35,8 @@ insertInto: func {
 
 selectFrom: func {
     db := Database new(dbPath)
-    db exec("select * from stuff", |vals|
-        "#{vals get("asd") toInt()}" println()
-        "#{vals get("zxc") toInt()}" println()
+    db exec("select * from builds", |vals|
+        "#{vals get("id") toInt()}, #{vals get("comment") toString()}" println()
     )
     db close()
 }
@@ -43,7 +44,7 @@ selectFrom: func {
 
 dropTable: func {
     db := Database new(dbPath)
-    stmt := db prepare("drop table stuff;")
+    stmt := db prepare("drop table builds;")
     stmt step()
     "#{stmt}" println()
     stmt finalize()
