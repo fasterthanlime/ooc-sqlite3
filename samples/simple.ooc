@@ -31,6 +31,7 @@ insertInto: func {
     stmt step()
     "#{stmt}" println()
     stmt finalize()
+    "last insert rowID = #{db lastInsertRowId()}" println()
 }
 
 selectFrom: func {

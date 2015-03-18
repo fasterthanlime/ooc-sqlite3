@@ -27,7 +27,7 @@ Database: cover from SqliteStruct {
     res
   }
 
-  exec: func (query: String, callback: Func (HashMap<String, Value>)) -> Int{
+  exec: func (query: String, callback: Func (HashMap<String, Value>)) -> Int {
     stmt := this prepare(query)
     res := stmt step()
     while (res == Sqlite3Code row){
@@ -38,6 +38,8 @@ Database: cover from SqliteStruct {
     stmt finalize()
     res
   }
+
+  lastInsertRowId: extern(sqlite3_last_insert_rowid) func -> Int64
 }
 
 // Values
@@ -113,6 +115,8 @@ Statement: cover from SqliteStmtStruct {
 
   _columnTable: extern(sqlite3_column_table_name) func (Int) -> CString
   columnTable: func (i: Int) -> String { _columnTable(i) toString() }
+
+  columnType: extern(sqlite3_column_type) func (Int) -> Int
 
   _sql: extern(sqlite3_sql) func -> CString
   toString: func -> String {
