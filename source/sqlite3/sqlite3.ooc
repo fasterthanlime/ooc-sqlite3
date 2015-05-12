@@ -77,6 +77,7 @@ Statement: cover from SqliteStmtStruct {
   blobColumn: extern(sqlite3_column_blob) func (Int) -> Pointer
   doubleColumn: extern(sqlite3_column_blob) func (Int) -> Double
   valueColumn: extern(sqlite3_column_value) func (Int) -> Value
+  columnBytes: extern(sqlite3_column_bytes) func (Int) -> SizeT
 
   bindParameterCount: extern(sqlite3_bind_parameter_count) func -> Int
   bindInt: extern(sqlite3_bind_int) func (Int, Int) -> Int
