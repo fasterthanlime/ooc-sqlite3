@@ -1,6 +1,6 @@
 
 use sqlite3
-import sqlite3/sqlite3
+import sqlite3
 import io/File
 
 dbPath := "simple.db"
