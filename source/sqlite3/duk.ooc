@@ -34,7 +34,7 @@ DB: class {
 
                 case duk isBoolean(argIndex) =>
                     val := duk requireBoolean(argIndex)
-                    stmt bindInt(bindIndex, val as Int)
+                    stmt bindInt(bindIndex, val ? 1 : 0)
 
                 case duk isBuffer(argIndex) =>
                     bufSize: SizeT
@@ -113,7 +113,8 @@ DB: class {
                                 dst := duk pushFixedBuffer(bufSize)
                                 memcpy(dst, src, bufSize)
                             case Sqlite3Type _text =>
-                                duk pushString(stmt textColumn(colIndex))
+                                cstr := stmt textColumn(colIndex)
+                                duk pushString(cstr)
                             case Sqlite3Type _null =>
                                 duk pushNull()
                             case =>
