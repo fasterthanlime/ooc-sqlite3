@@ -1,6 +1,6 @@
 
 use sqlite3
-import sqlite3/sqlite3
+import sqlite3
 
 use duktape
 import duk/tape
