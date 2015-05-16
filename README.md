@@ -10,6 +10,8 @@ zero-configuration, transactional SQL database engine. SQLite is the most
 widely deployed SQL database engine in the world. The source code for SQLite is
 in the public domain.
 
+This package also includes an interface for Duktape.
+
 ### Authors
 
   * Arda Çınar aka kuzux (original work)
